@@ -1,0 +1,15 @@
+---
+title: "AFM Data"
+author: "Lauren Puig"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| message: false
+
+library(tidyverse)
+```
+
+```{r}
