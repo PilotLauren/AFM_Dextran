@@ -10,6 +10,70 @@ editor: visual
 #| message: false
 
 library(tidyverse)
+library(readr)
+AFM_Data1 <- read_csv("AFM_Data1 - Sheet1.csv")
+AFM_D1 <- AFM_Data1
 ```
 
-\`\`\`{r}
+# Starting with first Data
+
+#assign row 5 as colnames
+
+colnames(Data_1) \<- Data_1\[5,\]
+
+remove row 1:5
+
+Data_1 \<- Data_1\[c(-1:-5),\] View(Data_1)
+
+```{r}
+#| label: Graph-first
+
+ggplot(AFM_Data1, aes(x = -retraction_nm, y = -force_r))+
+  geom_line()
+```
+
+```{r}
+#| label: change-data
+AFM_D1 = transform(AFM_Data1,force_r = rev(force_r), retraction_nm = rev(retraction_nm))
+
+setpointAFM1 <- AFM_D1 |>
+  slice(1:150) |> 
+  summarise(mean_force = (mean(force_r)))
+setpointAFM1
+AFM_D1
+```
+
+```{r}
+#| label: subtract-mean
+
+AFM_normal <- AFM_D1|>
+  mutate(force_r = force_r - setpointAFM1$mean_force)|>
+  mutate(force_f = force_f - setpointAFM1$mean_force)
+AFM_normal
+```
+
+```{r}
+#| label: plot-to-see-diff
+
+ggplot(AFM_normal)+
+  scale_y_reverse()+
+  scale_x_reverse()+
+  geom_line(aes(x = retraction_nm, y = force_r), color = "orange")+
+  geom_line(aes(x = extension_nm, y = force_f))
+```
+
+ok now just to see one selection
+
+```{r}
+#| label: filter-to-hump
+
+dextran_AFM <- AFM_normal|>
+  filter(force_r <= -200)
+
+ggplot(dextran_AFM)+
+  scale_y_reverse()+
+  scale_x_reverse()+
+  geom_line(aes(x = retraction_nm, y = force_r), color = "orange")+
+  geom_line(aes(x = extension_nm, y = force_f))
+
+```
