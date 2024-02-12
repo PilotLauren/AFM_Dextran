@@ -73,7 +73,13 @@ dextran_AFM <- AFM_normal|>
 ggplot(dextran_AFM)+
   scale_y_reverse()+
   scale_x_reverse()+
-  geom_line(aes(x = retraction_nm, y = force_r), color = "orange")+
-  geom_line(aes(x = extension_nm, y = force_f))
+  geom_line(aes(x = retraction_nm, y = force_r), color = "red")+
+  geom_line(aes(x = extension_nm, y = force_f), color = "blue")+
+  theme_bw()+
+  labs(
+    title = "Dextran force extension curve",
+    x = "distance (nm)",
+    y = "force (pN)"
+  )
 
 ```
