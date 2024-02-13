@@ -59,7 +59,7 @@ ggplot(AFM_normal)+
   scale_y_reverse()+
   scale_x_reverse()+
   geom_line(aes(x = retraction_nm, y = force_r), color = "orange")+
-  geom_line(aes(x = extension_nm, y = force_f))
+  geom_line(aes(x = extension_nm, y = force_f))+
 ```
 
 ok now just to see one selection
@@ -85,5 +85,6 @@ ggplot(dextran_AFM)+
     x = "distance (nm)",
     y = "force (pN)",
     )
+  #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE)
 
 ```
