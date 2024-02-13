@@ -70,16 +70,20 @@ ok now just to see one selection
 dextran_AFM <- AFM_normal|>
   filter(force_r <= -200)
 
+colss <- c("blue", "red")
+exten <- c("extension", "retraction")
+
 ggplot(dextran_AFM)+
   scale_y_reverse()+
   scale_x_reverse()+
-  geom_line(aes(x = retraction_nm, y = force_r), color = "red")+
-  geom_line(aes(x = extension_nm, y = force_f), color = "blue")+
+  geom_line(aes(x = retraction_nm, y = force_r, color = "red"))+
+  geom_line(aes(x = extension_nm, y = force_f, color = "blue"))+
   theme_bw()+
+  scale_color_manual(name = "", labels = exten, values = colss)+
   labs(
-    title = "Dextran force extension curve",
+    title = "Dextran force curve",
     x = "distance (nm)",
-    y = "force (pN)"
-  )
+    y = "force (pN)",
+    )
 
 ```
