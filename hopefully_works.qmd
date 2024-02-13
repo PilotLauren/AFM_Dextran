@@ -11,6 +11,8 @@ editor: visual
 
 library(tidyverse)
 library(readr)
+library(afmToolkit)
+library(data.table)
 AFM_Data1 <- read_csv("AFM_Data1 - Sheet1.csv")
 AFM_D1 <- AFM_Data1
 ```
@@ -50,6 +52,12 @@ AFM_normal <- AFM_D1|>
   mutate(force_r = force_r - setpointAFM1$mean_force)|>
   mutate(force_f = force_f - setpointAFM1$mean_force)
 AFM_normal
+
+springconst <- AFM_normal |>
+  filter(force_f > 4500 & force_f < 5000)|>
+  filter(force_f == max(force_f) | force_f == min(force_f))|>
+  summarize(slope = (force_f[1] - force_f [-1])/(extension_nm[1]-extension_nm[-1]))
+springconst
 ```
 
 ```{r}
@@ -59,7 +67,7 @@ ggplot(AFM_normal)+
   scale_y_reverse()+
   scale_x_reverse()+
   geom_line(aes(x = retraction_nm, y = force_r), color = "orange")+
-  geom_line(aes(x = extension_nm, y = force_f))+
+  geom_line(aes(x = extension_nm, y = force_f))
 ```
 
 ok now just to see one selection
@@ -69,6 +77,7 @@ ok now just to see one selection
 
 dextran_AFM <- AFM_normal|>
   filter(force_r <= -200)
+
 
 colss <- c("blue", "red")
 exten <- c("extension", "retraction")
@@ -84,7 +93,87 @@ ggplot(dextran_AFM)+
     title = "Dextran force curve",
     x = "distance (nm)",
     y = "force (pN)",
-    )
-  #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE)
+    )+
+  geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
 
+```
+
+```{r}
+#| label: separating-data
+
+
+forwardAFM <- AFM_D1 |>
+  mutate(nm = extension_nm, force = force_f)|>
+  select(nm, force)
+forwardAFM
+
+reverseAFM <- AFM_D1 |>
+  mutate(nm = retraction_nm, force = force_r)|>
+  select(nm, force)
+reverseAFM
+
+boundAFM <- rbind(forwardAFM, reverseAFM)
+boundAFM
+segment <- rep(c("approach", "retract"),times=c(5000,5000))
+segment
+```
+
+Continuing 2/13 with AFM library - annoying
+
+```{r}
+#| AFM-toolkit-test
+
+AFMtesttool <- boundAFM
+n <- nrow(AFMtesttool)
+z <- AFMtesttool$nm
+force <- AFMtesttool$force
+
+Time <- rep(1, n)
+AFMcurve <- afmdata(data.frame(Z = z, Force = force, Segment = segment, Time = Time), params = list(SpringConstant = as.numeric(0.130146), curvename = "data1ret" ))
+plot(AFMcurve)
+
+```
+
+An afmdata structure identical to the one in the input, but with an additional ForceCorrected column in the data dataframe of the afmdata structure.
+
+```{r}
+#| label: contact-point
+
+data <- AFMcurve
+width <- 20
+mul1 <- 1
+mul2 <- 15
+contacted <- afmContactPoint(data, width = width, mul1 = mul1, mul2 = mul2, loessSmooth = FALSE)
+plot(contacted) + geom_vline(xintercept = contacted$CP$CP, lty = 2)
+
+AFMcurvebc <- contacted
+
+```
+
+```{r}
+#| label: using-baseline-correction
+
+app <- 0.7*4817.88 + 0.3*5154
+
+AFMcurvecorr <- afmBaselineCorrection(AFMcurvebc)#, fitpause = "approach", ZPointApp = as.numeric(app), vsTime = FALSE)
+plot(AFMcurvecorr)
+
+```
+
+```{r}
+#| label: testing-to-see-difference
+
+glimpse(AFMcurvebc)
+glimpse(AFMcurvet)
+```
+
+```{r}
+#| label: test-code-undefined
+
+AFMcurvet <- afmReadJPK("force-save-JPK-3h.txt.gz", path = path.package("afmToolkit"))
+AFMcurvet <- afmContactPoint(AFMcurvet,width = 10,mul1 = 1,mul2 = 20,
+loessSmooth = FALSE)
+AFMcurvet2 <- afmBaselineCorrection(AFMcurvet)
+AFMcurvet2
+plot(AFMcurvet2)
 ```

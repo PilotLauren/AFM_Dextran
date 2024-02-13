@@ -1,0 +1,23 @@
+---
+title: "AFM Data"
+author: "Lauren Puig"
+format: pdf
+editor: visual
+---
+
+Run this before library(AFM) then delete
+
+```{r}
+if(!require('rgl', quietly = TRUE)) {
+    install.packages('rgl', dependencies = TRUE)
+    if (!capabilities("X11") && .Platform$OS.type == "unix") {
+        message("X11 is not available. Trying to use Xvfb...")
+        Sys.setenv(RGL_USE_NULL = "TRUE")
+    }
+    library('rgl') # Ensure 'rgl' is loaded after installation
+}
+if(!require('AFM', quietly = TRUE)) {
+    install.packages('AFM')
+    library('AFM')
+}
+```
