@@ -99,6 +99,14 @@ ggplot(dextran_AFM)+
 ```
 
 ```{r}
+#| label: cleaning-data-include-first-stretch
+
+first_Dex <- AFM_normal|>
+  filter()
+
+```
+
+```{r}
 #| label: separating-data
 
 
@@ -176,4 +184,14 @@ loessSmooth = FALSE)
 AFMcurvet2 <- afmBaselineCorrection(AFMcurvet)
 AFMcurvet2
 plot(AFMcurvet2)
+```
+
+'
+
+```{r}
+#| label: dying
+
+directory <-getwd()
+directory
+write.csv(dextran_AFM, "Downloads" )
 ```
