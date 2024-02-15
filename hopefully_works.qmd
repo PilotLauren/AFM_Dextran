@@ -78,6 +78,9 @@ ok now just to see one selection
 dextran_AFM <- AFM_normal|>
   filter(force_r <= -200)
 
+dextran_AFM_entire <- AFM_normal|>
+  filter(force_r <= 0)
+
 
 colss <- c("blue", "red")
 exten <- c("extension", "retraction")
@@ -193,5 +196,5 @@ plot(AFMcurvet2)
 
 directory <-getwd()
 directory
-write.csv(dextran_AFM, "Downloads" )
+write.csv(dextran_AFM, "/home/guest/AFM_Dextran/dextran_AFM_entire.csv", row.names=FALSE)
 ```
