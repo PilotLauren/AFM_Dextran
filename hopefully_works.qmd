@@ -196,5 +196,5 @@ plot(AFMcurvet2)
 
 directory <-getwd()
 directory
-write.csv(dextran_AFM, "/home/guest/AFM_Dextran/dextran_AFM_entire.csv", row.names=FALSE)
+write.csv(dextran_AFM_entire, "/home/guest/AFM_Dextran/dextran_AFM_entire.csv", row.names=FALSE)
 ```
