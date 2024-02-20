@@ -13,6 +13,7 @@ library(tidyverse)
 library(readr)
 library(afmToolkit)
 library(data.table)
+#read_tsv() for tab separated
 AFM_Data1 <- read_csv("AFM_Data1 - Sheet1.csv")
 AFM_D1 <- AFM_Data1
 ```
@@ -75,17 +76,28 @@ ok now just to see one selection
 ```{r}
 #| label: filter-to-hump
 
-dextran_AFM <- AFM_normal|>
-  filter(force_r <= -200)
+dextran_AFM_total <- AFM_normal|>
+  filter(force_r <= 500)|>
+  filter(retraction_nm <4775 & retraction_nm > 4719.014)
+
+dextran_first <- dextran_AFM_total|>
+  filter(retraction_nm > 4730)
+
+dextran_not <- dextran_AFM_total|>
+  filter(retraction_nm < 4760 & retraction_nm >4730)
+
+dextran_second <- dextran_AFM_total |>
+  filter(!retraction_nm %in% dextran_not$retraction_nm)
 
 dextran_AFM_entire <- AFM_normal|>
-  filter(force_r <= 0)
+  filter(force_r == min(force_r))
+dextran_AFM_entire
 
 
 colss <- c("blue", "red")
 exten <- c("extension", "retraction")
 
-ggplot(dextran_AFM)+
+ggplot(dextran_second)+
   scale_y_reverse()+
   scale_x_reverse()+
   geom_line(aes(x = retraction_nm, y = force_r, color = "red"))+
@@ -96,10 +108,12 @@ ggplot(dextran_AFM)+
     title = "Dextran force curve",
     x = "distance (nm)",
     y = "force (pN)",
-    )+
-  geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
+    )#+
+  #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
 
 ```
+
+\
 
 ```{r}
 #| label: cleaning-data-include-first-stretch
@@ -153,7 +167,7 @@ An afmdata structure identical to the one in the input, but with an additional F
 data <- AFMcurve
 width <- 20
 mul1 <- 1
-mul2 <- 15
+mul2 <- 5
 contacted <- afmContactPoint(data, width = width, mul1 = mul1, mul2 = mul2, loessSmooth = FALSE)
 plot(contacted) + geom_vline(xintercept = contacted$CP$CP, lty = 2)
 
@@ -196,5 +210,8 @@ plot(AFMcurvet2)
 
 directory <-getwd()
 directory
-write.csv(dextran_AFM_entire, "/home/guest/AFM_Dextran/dextran_AFM_entire.csv", row.names=FALSE)
+write.csv(dextran_first, "/home/guest/AFM_Dextran/dextran_first.csv", row.names=FALSE)
+write.csv(dextran_second, "/home/guest/AFM_Dextran/dextran_second.csv", row.names=FALSE)
+help = contacted$CP$CP
+help
 ```
