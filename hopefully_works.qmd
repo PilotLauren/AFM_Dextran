@@ -97,7 +97,7 @@ dextran_AFM_entire
 colss <- c("blue", "red")
 exten <- c("extension", "retraction")
 
-ggplot(dextran_second)+
+ggplot(dextran_AFM_total)+
   scale_y_reverse()+
   scale_x_reverse()+
   geom_line(aes(x = retraction_nm, y = force_r, color = "red"))+
