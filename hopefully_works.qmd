@@ -130,17 +130,17 @@ first_Dex <- AFM_normal|>
 forwardAFM <- AFM_D1 |>
   mutate(nm = extension_nm, force = force_f)|>
   select(nm, force)
-forwardAFM
+
 
 reverseAFM <- AFM_D1 |>
   mutate(nm = retraction_nm, force = force_r)|>
   select(nm, force)
-reverseAFM
+
 
 boundAFM <- rbind(forwardAFM, reverseAFM)
-boundAFM
+
 segment <- rep(c("approach", "retract"),times=c(5000,5000))
-segment
+
 ```
 
 Continuing 2/13 with AFM library - annoying
