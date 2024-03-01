@@ -24,7 +24,7 @@ AFM_a
 
 ggplot(AFM_a, aes(x = -retraction, y = -force_r))+
   geom_line()
-
+write.csv(AFM_a, "~/AFM_Dextran/helpful start/finding_small.csv", row.names=FALSE)
 ```
 
 ```{r}
