@@ -11,12 +11,14 @@ editor: visual
 
 library(tidyverse)
 library(readr)
-library(afmToolkit)
 library(data.table)
 #read_tsv() for tab separated
-AFM_search <- read_tsv("~/AFM_Dextran/data afm 2.8.24/data_400[nm_ s]_5.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
+AFM_search <- read_tsv("~/AFM_Dextran/DNA 2024-02-29/data_400[nm_ s]_14.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
 AFM_a <- transform(AFM_search,force_r = rev(force_r), retraction = rev(retraction))
 AFM_a
+ggplot(AFM_a, aes(x = -retraction, y = -force_r))+
+  geom_line()
+write.csv(AFM_a, "~/AFM_Dextran/helpful start/finding_small.csv", row.names=FALSE)
 ```
 
 ```{r}
@@ -40,40 +42,33 @@ AFM_normal <- AFM_a|>
   mutate(force_r = -force_r + zero_point)|>
   mutate(force_f = -force_f + zero_point)
 AFM_normal
+ggplot(AFM_normal, aes(x = retraction, y = force_r))+
+  geom_line()
 ```
 
 ```{r}
 #| label: find-start-extension
 
 dextran_AFM_total <- AFM_normal|>
-  filter(force_r > -500)#|>
+  filter(force_r > 0)#|>
   #filter(retraction <4775 & retraction > 4719.014)
 
 max_force <- max(dextran_AFM_total$force_r)
 
-dextran_AFM_entire <- AFM_normal|>
-  filter(retraction < 4725 & retraction > max$retraction)
+DNA_AFM_entire <- AFM_normal|>
+  filter(retraction < 5300 & retraction > 5252.890)
 dextran_AFM_entire
 
-max <- dextran_AFM_total |>
+max <- dextran_AFM_entire |>
   filter(force_r == max_force)
 
-dextran_first <- dextran_AFM_entire|>
-  filter(retraction < max(retraction) & retraction > 4660)
 
-dextran_not <- dextran_AFM_entire|>
-  filter(retraction < 4680 & retraction >4655)
-
-dextran_second <- dextran_AFM_entire |>
-  filter(!retraction %in% dextran_not$retraction)
-
-
-
+max
 
 colss <- c("blue", "red")
 exten <- c("extension", "retraction")
 
-ggplot(dextran_second)+
+ggplot(DNA_AFM_entire)+
   scale_x_reverse()+
   geom_line(aes(x = retraction, y = force_r, color = "red"))+
   geom_line(aes(x = extension, y = force_f, color = "blue"))+
@@ -85,6 +80,8 @@ ggplot(dextran_second)+
     y = "force (pN)",
     )#+
   #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
+
+write.csv(DNA_AFM_entire, "/home/guest/AFM_Dextran/data1/DNA_AFM_entire.csv", row.names=FALSE)
 
 ```
 

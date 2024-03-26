@@ -1,0 +1,82 @@
+---
+title: "Aviation Cleaning"
+author: "Lauren Puig"
+format: pdf
+editor: visual
+---
+
+# Adding Excel Sheets
+
+```{r}
+#| label: library
+#| message: false
+
+
+library(tidyverse)
+library(readxl)
+```
+
+Steps to get data:
+
+Went to: <https://data.ntsb.gov/avdata>
+
+Acquired 9 most recent data advances for aircraft crashes. January 1, 2024 - March 15, 2024
+
+Merged all together with excel files for the aircraft data and also the narratives
+
+```{r}
+#| label: adding-dataframes
+
+
+aircraft_3 <- read_excel("ntsb/aircraft_3up01JAN.xlsx")
+aircraft_2 <- read_excel("ntsb/aircraft_2.xlsx")
+aircraft0 <- read_excel("ntsb/aircraft0.xlsx")
+aircraft1 <- read_excel("ntsb/aircraft1.xlsx")
+aircraft2 <- read_excel("ntsb/aircraft2.xlsx")
+aircraft3 <- read_excel("ntsb/aircraft3.xlsx")
+aircraft4 <- read_excel("ntsb/aircraft4.xlsx")
+aircraft5 <- read_excel("ntsb/aircraft5.xlsx")
+aircraft6 <- read_excel("ntsb/aircraft6.xlsx")
+
+narratives_3 <- read_excel("ntsb/narratives_3up01JAN.xlsx")
+narratives_2 <- read_excel("ntsb/narratives_2.xlsx")
+narratives0 <- read_excel("ntsb/narratives0.xlsx")
+narratives1 <- read_excel("ntsb/narratives1.xlsx")
+narratives2 <- read_excel("ntsb/narratives2.xlsx")
+narratives3 <- read_excel("ntsb/narratives3.xlsx")
+narratives4 <- read_excel("ntsb/narratives4.xlsx")
+narratives5 <- read_excel("ntsb/narratives5.xlsx")
+narratives6 <- read_excel("ntsb/narratives6.xlsx")
+```
+
+Now need to merge the narratives with their ev_id. Not all accidents contain a narrative of what happen but usually over 50% do.
+
+```{r}
+#| label: merging-data
+
+airnar_3 <- left_join(aircraft_3, narratives_3, by="ev_id")
+airnar_2 <- left_join(aircraft_2, narratives_2, by="ev_id")
+airnar0 <- left_join(aircraft0, narratives0, by="ev_id")
+airnar1 <- left_join(aircraft1, narratives1, by="ev_id")
+airnar2 <- left_join(aircraft2, narratives2, by="ev_id")
+airnar3 <- left_join(aircraft3, narratives3, by="ev_id")
+airnar4 <- left_join(aircraft4, narratives4, by="ev_id")
+airnar5 <- left_join(aircraft5, narratives5, by="ev_id")
+airnar6 <- left_join(aircraft6, narratives6, by="ev_id")
+```
+
+Duplicate in airnar5 - ev_id 20211221104432 has 2 instances because a plane collider with a paraglider and both had to be noted as one event.
+
+Merge datasets into one!
+
+```{r}
+#| label: merge-one
+
+
+MegaAirnar <- bind_rows(airnar_3, airnar_2, airnar0, airnar1, airnar2, airnar3, airnar4, airnar5, airnar6)
+
+ValuableAirNar <- MegaAirnar |>
+  select(ev_id, far_part, damage, acft_make, acft_model, acft_category, date_last_insp, owner_acft, oper_name, dprt_apt_id, dprt_city, dprt_state, dprt_country, dest_apt_id, dest_city, dest_state, dest_country, acft_year, fuel_on_board, narr_accp, narr_accf, narr_cause)
+
+ValuableAirNar
+```
