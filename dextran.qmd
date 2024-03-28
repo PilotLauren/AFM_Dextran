@@ -1,0 +1,135 @@
+---
+title: "Better Data"
+author: "Lauren Puig"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| message: false
+
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(data.table)
+
+```
+
+```{r}
+#| label: find-dextran
+
+#read_tsv() for tab separated
+AFM_search <- read_tsv("~/AFM_Dextran/data afm 2.8.24/data_400[nm_ s]_1.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
+AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction))
+AFM_a
+ggplot(AFM_a, aes(x = retraction, y = force_r))+
+  geom_line()
+#write.csv(AFM_a, "~/AFM_Dextran/data1/dextran.csv", row.names=FALSE)
+
+```
+
+what the
+
+```{r}
+#| label: graph-data
+AFM_dextran <- AFM_a
+ggplot(AFM_dextran, aes(x = retraction, y = force_r))+
+  geom_line()
+
+```
+
+```{r}
+#| label: normalize-force
+
+setpointAFM <- AFM_dextran |>
+  slice(1:150)
+
+zero_point <- mean(setpointAFM$force_f)
+zero_point
+
+AFM_normal <- AFM_dextran|>
+  mutate(force_r = force_r + zero_point)|>
+  mutate(force_f = -force_f + zero_point)|>
+  mutate(extension = -extension)
+AFM_normal
+ggplot(AFM_normal, aes(x = extension, y = force_r))+
+  geom_line()
+```
+
+```{r}
+#| label: find-start-extension
+
+dextran_AFM_total <- AFM_normal
+
+max_force <- max(dextran_AFM_total$force_r)
+
+dextran_max <- dextran_AFM_total |>
+  filter(force_r == max_force)
+
+Dextran <- dextran_AFM_total|>
+  filter(retraction > -4800 & retraction <= -4719.014)
+
+dextran_max
+
+colss <- c("blue", "red")
+exten <- c("extension", "retraction")
+
+ggplot(Dextran)+
+  #scale_x_reverse()+
+  geom_line(aes(x = retraction, y = force_r, color = "red"))+
+  geom_line(aes(x = extension, y = force_f, color = "blue"))+
+  theme_bw()+
+  scale_color_manual(name = "", labels = exten, values = colss)+
+  labs(
+    title = "Dextran force curve",
+    x = "distance (nm)",
+    y = "force (pN)",
+    )#+
+  #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
+
+write.csv(Dextran, "/home/guest/AFM_Dextran/data1/Dextran_trim.csv", row.names=FALSE)
+
+```
+
+```{r}
+#| label: start-from-zero
+
+
+new_dextran_entire <- dextran_AFM_entire |>
+  mutate(retraction = -(retraction - max(extension)))|>
+  mutate(extension = -(extension - max(extension)))
+
+new_dextran_second <- dextran_second|>
+  mutate(retraction = -(retraction - max(extension)))|>
+  mutate(extension = -(extension - max(extension)))
+
+new_dextran_first <- dextran_first |>
+  mutate(retraction = -(retraction - max(extension)))|>
+  mutate(extension = -(extension - max(extension)))
+
+
+ggplot(new_dextran_second)+
+  #scale_x_reverse()+
+  geom_line(aes(x = retraction, y = force_r, color = "red"))+
+  geom_line(aes(x = extension, y = force_f, color = "blue"))+
+  theme_bw()+
+  scale_color_manual(name = "", labels = exten, values = colss)+
+  labs(
+    title = "Dextran force curve",
+    x = "distance (nm)",
+    y = "force (pN)",
+    )#+
+  #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
+```
+
+```{r}
+#| label: save-files
+#| r
+
+write.csv(new_dextran_first, "/home/guest/AFM_Dextran/data1/new_dextran_first.csv", row.names=FALSE)
+write.csv(new_dextran_second, "/home/guest/AFM_Dextran/data1/new_dextran_second.csv", row.names=FALSE)
+
+write.csv(new_dextran_entire, "/home/guest/AFM_Dextran/data1/new_dextran_entire.csv", row.names=FALSE)
+
+```
