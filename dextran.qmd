@@ -13,18 +13,23 @@ library(tidyverse)
 library(readr)
 library(dplyr)
 library(data.table)
-
+library(tidymodels)
+library(openintro)
 ```
 
 ```{r}
 #| label: find-dextran
 
 #read_tsv() for tab separated
-AFM_search <- read_tsv("~/AFM_Dextran/data afm 2.8.24/data_400[nm_ s]_1.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
+AFM_search <- read_tsv("~/AFM_Dextran/data afm 2.8.24/data_400[nm_ s]_5.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
 AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction))
-AFM_a
-ggplot(AFM_a, aes(x = retraction, y = force_r))+
-  geom_line()
+AFM_a <- AFM_a |>
+  mutate(extension = extension - 8.5)#|>
+  #mutate(force_r = force_r + force_f)
+ggplot(AFM_a)+
+  geom_line(aes(x = retraction, y = force_r))+
+  geom_line(aes(x = -extension, y = -force_f), color = "red")
+
 #write.csv(AFM_a, "~/AFM_Dextran/data1/dextran.csv", row.names=FALSE)
 
 ```
@@ -47,14 +52,46 @@ setpointAFM <- AFM_dextran |>
 
 zero_point <- mean(setpointAFM$force_f)
 zero_point
+AFM_b <- AFM_dextran|>
+  mutate(force_r = force_r + zero_point)|>
+  mutate(force_f = -force_f + zero_point)|>
+  mutate(rownum = row_number(retraction))
+
 
 AFM_normal <- AFM_dextran|>
   mutate(force_r = force_r + zero_point)|>
   mutate(force_f = -force_f + zero_point)|>
-  mutate(extension = -extension)
-AFM_normal
-ggplot(AFM_normal, aes(x = extension, y = force_r))+
-  geom_line()
+  mutate(extension = (-extension + 4740.269)- (force_r/180.4943))|>
+  mutate(retraction = ((retraction + 4738.943) - (force_r/173.3734)))|>
+  mutate(rownum = row_number(retraction))
+
+
+ggplot(AFM_normal)+
+  geom_line(aes(x = retraction, y = force_r))+
+  geom_line(aes(x = extension, y = force_f), color = "red") +
+  geom_hline(yintercept = 0, color = "orange")#+
+  #geom_abline(intercept = 0, slope = 173.3734, color = "blue")
+```
+
+x intercept is 4738.943247
+
+```{r}
+#| label: find-constant-spring
+
+linear <- AFM_b |>
+  filter(rownum > 1000 & rownum < 1250)
+```
+
+```{r}
+#| label: linear-reg
+
+
+line_f_x <- linear_reg()|>
+  fit(force_f ~ extension, data = linear)
+
+821606.7031/173.3734
+855591.5182/180.4943
+tidy(line_f_x)
 ```
 
 ```{r}
@@ -68,7 +105,8 @@ dextran_max <- dextran_AFM_total |>
   filter(force_r == max_force)
 
 Dextran <- dextran_AFM_total|>
-  filter(retraction > -4800 & retraction <= -4719.014)
+  filter(retraction > 50 & retraction <= 72)#|>
+  #mutate(force_r = force_r - force_f)
 
 dextran_max
 
@@ -88,7 +126,7 @@ ggplot(Dextran)+
     )#+
   #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
 
-write.csv(Dextran, "/home/guest/AFM_Dextran/data1/Dextran_trim.csv", row.names=FALSE)
+write.csv(Dextran, "/home/guest/AFM_Dextran/data1/Dextran_good.csv", row.names=FALSE)
 
 ```
 
