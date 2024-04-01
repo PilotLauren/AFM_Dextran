@@ -21,13 +21,13 @@ library(tidymodels)
 
 #read_tsv() for tab separated
 AFM_search <- read_tsv("~/AFM_Dextran/2024-03-05 Protein/data_400[nm_ s]_25.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
-AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction))
+AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction), extension = -extension, force_f = -force_f)
 AFM_a <- AFM_a |>
   mutate(extension = extension - 8.5)#|>
   #mutate(force_r = force_r + force_f)
 ggplot(AFM_a)+
   geom_line(aes(x = retraction, y = force_r))+
-  geom_line(aes(x = -extension, y = -force_f), color = "red")
+  geom_line(aes(x = extension, y = force_f), color = "red")
 
 #write.csv(AFM_a, "~/AFM_Dextran/data1/dextran.csv", row.names=FALSE)
 
@@ -37,8 +37,8 @@ what the
 
 ```{r}
 #| label: graph-data
-AFM_dextran <- AFM_a
-ggplot(AFM_dextran, aes(x = retraction, y = force_r))+
+AFM_protein <- AFM_a
+ggplot(AFM_protein, aes(x = extension, y = force_f))+
   geom_line()
 
 ```
@@ -46,23 +46,23 @@ ggplot(AFM_dextran, aes(x = retraction, y = force_r))+
 ```{r}
 #| label: normalize-force
 
-setpointAFM <- AFM_dextran |>
+setpointAFM <- AFM_protein |>
   slice(1:150)
 
-zero_point <- mean(setpointAFM$force_f)
+zero_point <- mean(setpointAFM$force_r)
 zero_point
-AFM_b <- AFM_dextran|>
-  mutate(force_r = force_r + zero_point)|>
-  mutate(force_f = -force_f + zero_point)|>
+AFM_b <- AFM_protein|>
+  mutate(force_r = force_r - zero_point)|>
+  mutate(force_f = force_f - zero_point)|>
   mutate(rownum = row_number(retraction))
 
 
-AFM_normal <- AFM_dextran|>
-  mutate(force_r = force_r + zero_point)|>
-  mutate(force_f = -force_f + zero_point)|>
-  mutate(extension = (-extension + 4740.269)- (force_r/180.4943))|>
+AFM_normal <- AFM_protein|>
+  mutate(force_r = force_r - zero_point)|>
+  mutate(force_f = force_f - zero_point)|>
+  mutate(extension = (extension + 4740.269)- (force_r/180.4943))|>
   mutate(retraction = ((retraction + 4738.943) - (force_r/173.3734)))|>
-  mutate(rownum = row_number(retraction))
+  mutate(rownum = row_number(extension))
 
 
 ggplot(AFM_normal)+

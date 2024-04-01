@@ -104,7 +104,7 @@ DNA_max <- DNA_AFM_total |>
   filter(force_r == max_force)
 
 DNA <- DNA_AFM_total|>
-  filter(retraction > 20 & retraction <= 60)#|>
+  filter(retraction > 0 & retraction <= 60)#|>
   #mutate(force_r = force_r - force_f)
 
 DNA_max
