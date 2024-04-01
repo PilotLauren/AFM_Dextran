@@ -20,7 +20,7 @@ library(tidymodels)
 #| label: find-dextran
 
 #read_tsv() for tab separated
-AFM_search <- read_tsv("~/AFM_Dextran/DNA 2024-02-29/data_400[nm_ s]_14.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
+AFM_search <- read_tsv("~/AFM_Dextran/DNA 2024-02-29/data_400[nm_ s]_7.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
 AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction))
 AFM_a <- AFM_a |>
   mutate(extension = extension - 8.5)#|>

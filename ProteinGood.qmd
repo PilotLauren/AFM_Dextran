@@ -20,7 +20,7 @@ library(tidymodels)
 #| label: find-dextran
 
 #read_tsv() for tab separated
-AFM_search <- read_tsv("~/AFM_Dextran/2024-03-05 Protein/data_400[nm_ s]_25.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
+AFM_search <- read_tsv("~/AFM_Dextran/2024-03-05 Protein/data_400[nm_ s]_26.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
 AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction), extension = -extension, force_f = -force_f)
 AFM_a <- AFM_a |>
   mutate(extension = extension - 8.5)#|>
@@ -47,7 +47,7 @@ ggplot(AFM_protein, aes(x = extension, y = force_f))+
 #| label: normalize-force
 
 setpointAFM <- AFM_protein |>
-  slice(1:150)
+  slice(4800:5000)
 
 zero_point <- mean(setpointAFM$force_r)
 zero_point
@@ -60,8 +60,8 @@ AFM_b <- AFM_protein|>
 AFM_normal <- AFM_protein|>
   mutate(force_r = force_r - zero_point)|>
   mutate(force_f = force_f - zero_point)|>
-  mutate(extension = (extension + 4740.269)- (force_r/180.4943))|>
-  mutate(retraction = ((retraction + 4738.943) - (force_r/173.3734)))|>
+  mutate(extension = (extension + 4824.09)- (force_r/77.68041))|>
+  mutate(retraction = ((retraction + 4814.09) - (force_r/77.68041)))|>
   mutate(rownum = row_number(extension))
 
 
@@ -78,7 +78,7 @@ x intercept is 4738.943247
 #| label: find-constant-spring
 
 linear <- AFM_b |>
-  filter(rownum > 1000 & rownum < 1250)
+  filter(rownum > 10 & rownum < 50)
 ```
 
 ```{r}
@@ -86,21 +86,20 @@ linear <- AFM_b |>
 
 
 line_f_x <- linear_reg()|>
-  fit(force_f ~ extension, data = linear)
+  fit(force_f ~ retraction, data = linear)
 
-821606.7031/173.3734
-855591.5182/180.4943
+374737.29393/77.68041
 tidy(line_f_x)
 ```
 
 ```{r}
 #| label: find-start-extension
 
-dextran_AFM_total <- AFM_normal
+protein_AFM_total <- AFM_normal
 
-max_force <- max(dextran_AFM_total$force_r)
+max_force <- max(protein_AFM_total$force_r)
 
-dextran_max <- dextran_AFM_total |>
+protein_max <- protein_AFM_total |>
   filter(force_r == max_force)
 
 Dextran <- dextran_AFM_total|>
@@ -125,7 +124,7 @@ ggplot(Dextran)+
     )#+
   #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
 
-write.csv(Dextran, "/home/guest/AFM_Dextran/data1/Dextran_good.csv", row.names=FALSE)
+#write.csv(Dextran, "/home/guest/AFM_Dextran/data1/Dextran_good.csv", row.names=FALSE)
 
 ```
 
