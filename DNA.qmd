@@ -1,0 +1,172 @@
+---
+title: "Better Data"
+author: "Lauren Puig"
+format: pdf
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| message: false
+
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(data.table)
+library(tidymodels)
+```
+
+```{r}
+#| label: find-dextran
+
+#read_tsv() for tab separated
+AFM_search <- read_tsv("~/AFM_Dextran/DNA 2024-02-29/data_400[nm_ s]_14.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
+AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction))
+AFM_a <- AFM_a |>
+  mutate(extension = extension - 8.5)#|>
+  #mutate(force_r = force_r + force_f)
+ggplot(AFM_a)+
+  geom_line(aes(x = retraction, y = force_r))+
+  geom_line(aes(x = -extension, y = -force_f), color = "red")
+
+#write.csv(AFM_a, "~/AFM_Dextran/data1/dextran.csv", row.names=FALSE)
+
+```
+
+what the
+
+```{r}
+#| label: graph-data
+AFM_DNA <- AFM_a
+ggplot(AFM_DNA, aes(x = retraction, y = force_r))+
+  geom_line()
+
+```
+
+```{r}
+#| label: normalize-force
+
+setpointAFM <- AFM_DNA |>
+  slice(1:150)
+
+zero_point <- mean(setpointAFM$force_f)
+zero_point
+AFM_b <- AFM_DNA|>
+  mutate(force_r = force_r + zero_point)|>
+  mutate(force_f = -force_f + zero_point)|>
+  mutate(rownum = row_number(retraction))
+
+
+AFM_normal <- AFM_DNA|>
+  mutate(force_r = force_r + zero_point)|>
+  mutate(force_f = -force_f + zero_point)|>
+  mutate(extension = (-extension + 5314.303)- (force_r/52.82428))|>
+  mutate(retraction = ((retraction + 5324.303) - (force_r/52.82428)))|>
+  mutate(rownum = row_number(retraction))
+
+
+ggplot(AFM_normal)+
+  geom_line(aes(x = retraction, y = force_r))+
+  geom_line(aes(x = extension, y = force_f), color = "red") +
+  geom_hline(yintercept = 0, color = "orange")#+
+  #geom_abline(intercept = 315.47640, slope = 26.69164, color = "blue")
+```
+
+x intercept is 4738.943247
+
+```{r}
+#| label: find-constant-spring
+
+linear <- AFM_b |>
+  filter(rownum > 1500 & rownum < 1800)
+```
+
+```{r}
+#| label: linear-reg
+
+
+line_f_x <- linear_reg()|>
+  fit(force_f ~ extension, data = linear)
+
+
+281252.449/52.82428
+tidy(line_f_x)
+```
+
+```{r}
+#| label: find-start-extension
+
+DNA_AFM_total <- AFM_normal
+
+max_force <- max(DNA_AFM_total$force_r)
+
+DNA_max <- DNA_AFM_total |>
+  filter(force_r == max_force)
+
+DNA <- DNA_AFM_total|>
+  filter(retraction > 20 & retraction <= 60)#|>
+  #mutate(force_r = force_r - force_f)
+
+DNA_max
+
+colss <- c("blue", "red")
+exten <- c("extension", "retraction")
+
+ggplot(DNA)+
+  #scale_x_reverse()+
+  geom_line(aes(x = retraction, y = force_r, color = "red"))+
+  geom_line(aes(x = extension, y = force_f, color = "blue"))+
+  theme_bw()+
+  scale_color_manual(name = "", labels = exten, values = colss)+
+  labs(
+    title = "DNA force curve",
+    x = "distance (nm)",
+    y = "force (pN)",
+    )#+
+  #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
+
+write.csv(DNA, "/home/guest/AFM_Dextran/data1/DNA_good.csv", row.names=FALSE)
+
+```
+
+```{r}
+#| label: start-from-zero
+
+
+new_dextran_entire <- dextran_AFM_entire |>
+  mutate(retraction = -(retraction - max(extension)))|>
+  mutate(extension = -(extension - max(extension)))
+
+new_dextran_second <- dextran_second|>
+  mutate(retraction = -(retraction - max(extension)))|>
+  mutate(extension = -(extension - max(extension)))
+
+new_dextran_first <- dextran_first |>
+  mutate(retraction = -(retraction - max(extension)))|>
+  mutate(extension = -(extension - max(extension)))
+
+
+ggplot(new_dextran_second)+
+  #scale_x_reverse()+
+  geom_line(aes(x = retraction, y = force_r, color = "red"))+
+  geom_line(aes(x = extension, y = force_f, color = "blue"))+
+  theme_bw()+
+  scale_color_manual(name = "", labels = exten, values = colss)+
+  labs(
+    title = "Dextran force curve",
+    x = "distance (nm)",
+    y = "force (pN)",
+    )#+
+  #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
+```
+
+```{r}
+#| label: save-files
+#| r
+
+write.csv(new_dextran_first, "/home/guest/AFM_Dextran/data1/new_dextran_first.csv", row.names=FALSE)
+write.csv(new_dextran_second, "/home/guest/AFM_Dextran/data1/new_dextran_second.csv", row.names=FALSE)
+
+write.csv(new_dextran_entire, "/home/guest/AFM_Dextran/data1/new_dextran_entire.csv", row.names=FALSE)
+
+```
