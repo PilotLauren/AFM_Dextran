@@ -20,7 +20,7 @@ library(tidymodels)
 #| label: find-dextran
 
 #read_tsv() for tab separated
-AFM_search <- read_tsv("~/AFM_Dextran/DNA 2024-02-29/data_400[nm_ s]_7.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
+AFM_search <- read_tsv("~/AFM_Dextran/DNA 2024-02-29/data_400[nm_ s]_28.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
 AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction))
 AFM_a <- AFM_a |>
   mutate(extension = extension - 8.5)#|>
@@ -60,8 +60,8 @@ AFM_b <- AFM_DNA|>
 AFM_normal <- AFM_DNA|>
   mutate(force_r = force_r + zero_point)|>
   mutate(force_f = -force_f + zero_point)|>
-  mutate(extension = (-extension + 5314.303)- (force_r/52.82428))|>
-  mutate(retraction = ((retraction + 5324.303) - (force_r/52.82428)))|>
+  mutate(extension = (-extension + 6854.35)- (force_r/51.79593))|>
+  mutate(retraction = ((retraction + 6864.35) - (force_r/51.79593)))|>
   mutate(rownum = row_number(retraction))
 
 
@@ -78,7 +78,7 @@ x intercept is 4738.943247
 #| label: find-constant-spring
 
 linear <- AFM_b |>
-  filter(rownum > 1500 & rownum < 1800)
+  filter(rownum > 700 & rownum < 800)
 ```
 
 ```{r}
@@ -87,9 +87,9 @@ linear <- AFM_b |>
 
 line_f_x <- linear_reg()|>
   fit(force_f ~ extension, data = linear)
-
-
-281252.449/52.82428
+355545.39789/51.79593
+260209.277/49.19762
+272100.57224/50.87395
 tidy(line_f_x)
 ```
 
@@ -98,13 +98,12 @@ tidy(line_f_x)
 
 DNA_AFM_total <- AFM_normal
 
-max_force <- max(DNA_AFM_total$force_r)
 
 DNA_max <- DNA_AFM_total |>
-  filter(force_r == max_force)
+  filter(force_r == max(force_r))
 
 DNA <- DNA_AFM_total|>
-  filter(retraction > 0 & retraction <= 60)#|>
+  filter(retraction > 100 & retraction <= 215)#|>
   #mutate(force_r = force_r - force_f)
 
 DNA_max
@@ -125,7 +124,7 @@ ggplot(DNA)+
     )#+
   #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
 
-write.csv(DNA, "/home/guest/AFM_Dextran/data1/DNA_good.csv", row.names=FALSE)
+write.csv(DNA, "/home/guest/AFM_Dextran/data1/DNA_full1.csv", row.names=FALSE)
 
 ```
 
