@@ -61,7 +61,7 @@ AFM_b <- AFM_dextran|>
 AFM_normal <- AFM_dextran|>
   mutate(force_r = force_r + zero_point)|>
   mutate(force_f = -force_f + zero_point)|>
-  mutate(extension = (-extension + 4730.269)- (force_r/180.4943))|>
+  mutate(extension = (-extension + 4740.269)- (force_r/180.4943))|>
   mutate(retraction = ((retraction + 4738.943) - (force_r/173.3734)))|>
   mutate(rownum = row_number(retraction))
 
