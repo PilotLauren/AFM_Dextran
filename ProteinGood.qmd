@@ -23,7 +23,7 @@ library(tidymodels)
 AFM_search <- read_tsv("~/AFM_Dextran/2024-03-05 Protein/data_400[nm_ s]_26.txt", skip_empty_rows = TRUE, skip = 5, col_names = c("extension","force_f", "retraction", "force_r"))
 AFM_a <- transform(AFM_search,force_r = -rev(force_r), retraction = -rev(retraction), extension = -extension, force_f = -force_f)
 AFM_a <- AFM_a |>
-  mutate(extension = extension - 8.5)#|>
+  mutate(extension = extension)#|>
   #mutate(force_r = force_r + force_f)
 ggplot(AFM_a)+
   geom_line(aes(x = retraction, y = force_r))+
@@ -60,8 +60,8 @@ AFM_b <- AFM_protein|>
 AFM_normal <- AFM_protein|>
   mutate(force_r = force_r - zero_point)|>
   mutate(force_f = force_f - zero_point)|>
-  mutate(extension = (extension + 4824.09)- (force_r/77.68041))|>
-  mutate(retraction = ((retraction + 4814.09) - (force_r/77.68041)))|>
+  mutate(extension = (extension + 4823.295)- (force_r/52.02284))|>
+  mutate(retraction = ((retraction + 4823.295) - (force_r/52.02284)))|>
   mutate(rownum = row_number(extension))
 
 
@@ -78,7 +78,7 @@ x intercept is 4738.943247
 #| label: find-constant-spring
 
 linear <- AFM_b |>
-  filter(rownum > 10 & rownum < 50)
+  filter(rownum > 80 & rownum < 200)
 ```
 
 ```{r}
@@ -88,7 +88,7 @@ linear <- AFM_b |>
 line_f_x <- linear_reg()|>
   fit(force_f ~ retraction, data = linear)
 
-374737.29393/77.68041
+250921.52646/52.02284
 tidy(line_f_x)
 ```
 
@@ -97,21 +97,23 @@ tidy(line_f_x)
 
 protein_AFM_total <- AFM_normal
 
-max_force <- max(protein_AFM_total$force_r)
+max_force <- max(protein_AFM_total$force_f)
 
 protein_max <- protein_AFM_total |>
-  filter(force_r == max_force)
+  filter(force_f == max_force)
 
-Dextran <- dextran_AFM_total|>
-  filter(retraction > 50 & retraction <= 72)#|>
-  #mutate(force_r = force_r - force_f)
+Protein <- protein_AFM_total|>
+  filter(extension > 120 & extension <= 256) #|>
+  #filter(!extension > 140 | !extension <= 188)
+  #filter(!extension > 140 | !extension <= 211) 
+  #filter(!extension > 140 | !extension <= 236)
 
-dextran_max
+protein_max
 
 colss <- c("blue", "red")
 exten <- c("extension", "retraction")
 
-ggplot(Dextran)+
+ggplot(Protein)+
   #scale_x_reverse()+
   geom_line(aes(x = retraction, y = force_r, color = "red"))+
   geom_line(aes(x = extension, y = force_f, color = "blue"))+
@@ -124,7 +126,7 @@ ggplot(Dextran)+
     )#+
   #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
 
-#write.csv(Dextran, "/home/guest/AFM_Dextran/data1/Dextran_good.csv", row.names=FALSE)
+write.csv(Protein, "/home/guest/AFM_Dextran/data1/Protein_full.csv", row.names=FALSE)
 
 ```
 
