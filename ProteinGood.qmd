@@ -103,11 +103,11 @@ protein_max <- protein_AFM_total |>
   filter(force_f == max_force)
 
 Protein <- protein_AFM_total|>
-  filter(extension > 120 & extension <= 256) #|>
+  filter(extension > 34.2 & extension <= 256) #|>
   #filter(!extension > 140 | !extension <= 188)
   #filter(!extension > 140 | !extension <= 211) 
   #filter(!extension > 140 | !extension <= 236)
-
+120-34.2
 protein_max
 
 colss <- c("blue", "red")
@@ -126,7 +126,7 @@ ggplot(Protein)+
     )#+
   #geom_smooth(aes(x = retraction_nm, y = force_r), se = FALSE, method = "gam", color = "black")
 
-write.csv(Protein, "/home/guest/AFM_Dextran/data1/Protein_full.csv", row.names=FALSE)
+write.csv(Protein, "/home/guest/AFM_Dextran/data1/Protein_ENTIRETY.csv", row.names=FALSE)
 
 ```
 
